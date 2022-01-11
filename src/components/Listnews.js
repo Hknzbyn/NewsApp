@@ -18,6 +18,7 @@ import {
   Animated,
   ToastAndroid,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 import {
@@ -35,12 +36,11 @@ let urlBase = `https://api.collectapi.com/news/getNews?country=tr&tag=general`; 
 //let axios = require(`axios`);
 
 import { WebView } from 'react-native-webview';
-import { StatusBar } from 'expo-status-bar';
 import ButtonsArea from './ButtonsArea';
 import * as Clipboard from 'expo-clipboard';
 import SmallAlert from './SmallAlert';
 
-export default function Listnews(props) {
+const Listnews = ({ navigation }) => {
   // const index = useRef(0);
   // const position = useRef(Animated.divide(scrollX, width)).current;
   // const [title, setTitle] = useState('');
@@ -51,10 +51,10 @@ export default function Listnews(props) {
 
   const [news, setNews] = useState([]);
 
-  const [modalVisible, setModalVisible] = useState(false);
+  //const [modalVisible, setModalVisible] = useState(false);
   const [copiedText, setCopiedText] = React.useState('');
   const [coppiedAlert, setCoppiedAlert] = useState(false);
-  const [openedUrl, setOpenedUrl] = useState('');
+  //const [openedUrl, setOpenedUrl] = useState('');
   const [sharedUrl, setSharedUrl] = useState('');
 
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -77,28 +77,6 @@ export default function Listnews(props) {
   useEffect(() => {
     getData();
   }, [sharedUrl]);
-
-  const onShare = async () => {
-    //setSharedUrl(item.url)
-    console.log('sharedUrl_ ' + sharedUrl);
-    try {
-      const result = await Share.share({
-        //message: sharedMessage,
-        url: sharedUrl,
-      });
-      if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          // shared with activity type of result.activityType
-        } else {
-          Alert.alert('ok');
-        }
-      } else if (result.action === Share.dismissedAction) {
-        // dismissed
-      }
-    } catch (error) {
-      alert(error.message);
-    }
-  };
 
   const getData = async () => {
     const item = await axios({
@@ -148,22 +126,9 @@ export default function Listnews(props) {
               opacity: 0.8,
             }}
             source={{ uri: item.image }}>
-            <View
-              style={{
-                height: width,
-                width: width,
-                justifyContent: 'space-around',
-                alignItems: 'center',
-              }}>
-              <View
-                style={{
-                  height: height * 0.2,
-                  //width: 200,
-                  //backgroundColor: 'green',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                }}>
-                <View style={styles.sourceArea}>
+            <View style={styles.newAreaGenerator}>
+              <View style={styles.sourceArea}>
+                <View style={styles.source}>
                   <Text style={styles.sourceText}>{item.source}</Text>
                 </View>
               </View>
@@ -182,13 +147,8 @@ export default function Listnews(props) {
                 </Pressable>
               </View>
 
-              <View
-                style={{
-                  maxWidth: width * 0.99,
-                  height: height * 0.2,
-                  justifyContent: 'flex-end',
-                }}>
-                <View style={styles.newTitleArea}>
+              <View style={styles.TitleArea}>
+                <View style={styles.Title}>
                   <Text style={styles.titleText}>{item.name}</Text>
                 </View>
               </View>
@@ -197,20 +157,14 @@ export default function Listnews(props) {
         </TouchableOpacity>
 
         <ButtonsArea
-          copyAction={() => copyText(item.url)}
-          saveAction={() => Alert.alert('onPress')}
-          onLongPress={() => Alert.alert('onlongPress')}
-          openAction={() => {
-            setOpenedUrl(item.url);
-            setModalVisible(true);
-          }}
-          shareAction={() => {
-            setSharedUrl(item.url);
-            onShare(sharedUrl);
-          }}
+          copyAction={item.url}
+          navigate={() => navigation.navigate('SavedNews')}
+          save={() => Alert.alert('onlongPress')}
+          openAction={item.url}
+          shareAction={item.url}
         />
 
-        <View style={styles.newDescprictionArea}>
+        <View style={styles.DescprictionArea}>
           <ScrollView style={styles.scrollArea}>
             <Text selectable={true} style={styles.descText}>
               {item.description}
@@ -223,8 +177,6 @@ export default function Listnews(props) {
 
   return (
     <View style={styles.containerView}>
-      <StatusBar backgroundColor='#181D31' style='light' />
-
       <Animated.FlatList
         ref={topRef}
         data={news}
@@ -238,16 +190,12 @@ export default function Listnews(props) {
         // }}
       />
 
-      <WebViewModal
-        url={openedUrl}
-        visible={modalVisible}
-        pressOut={() => setModalVisible(false)}
-        closeModal={() => setModalVisible(false)}
-      />
       <SmallAlert status={coppiedAlert} AlertText={'Panoya Kopyalandı'} />
     </View>
   );
-}
+};
+
+export default Listnews;
 
 const styles = StyleSheet.create({
   container: {
@@ -267,6 +215,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#181D31',
   },
+
+  //NEW AREA
   newAreaContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -275,6 +225,54 @@ const styles = StyleSheet.create({
     width: width,
     backgroundColor: '#181D31',
   },
+  newAreaGenerator: {
+    height: width,
+    width: width,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  newImageArea: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: width,
+    width: width,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderColor: '#F0E9D2',
+    //backgroundColor: 'purple',
+  },
+  //NEW AREA //
+
+  //SOURCE AREA
+  sourceArea: {
+    height: height * 0.2,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  source: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    opacity: 0.7,
+    height: 25,
+    width: height * 0.16,
+    backgroundColor: '#678983',
+  },
+  sourceText: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: 20,
+    textAlign: 'center',
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  //SOURCE AREA //
+
+  //ARROW AREA
   arrowArea: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -291,54 +289,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  sourceArea: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    opacity: 0.7,
-    height: 25,
-    width: height * 0.16,
-    backgroundColor: '#678983',
-  },
-  sourceText: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: 20,
-    textAlign: 'center',
-    color: 'white',
-    fontWeight: 'bold',
-  },
+  //ARROW AREA //
 
-  newImageArea: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: width,
-    width: width,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    borderColor: '#F0E9D2',
-    //backgroundColor: 'purple',
-  },
-  newDescprictionAreaGenerator: {
-    height: width,
-    width: width,
-    backgroundColor: 'yellow',
-  },
-  newDescprictionArea: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 2,
-    maxHeight: width,
-    //maxHeight:width-height-1,
-    width: width * 0.98,
+  //TİTLE AREA
+  TitleArea: {
     maxWidth: width * 0.99,
-    //backgroundColor: 'green',
+    height: height * 0.2,
+    justifyContent: 'flex-end',
   },
-  newTitleArea: {
+  Title: {
     width: width,
     //height: height * 0.1,
     justifyContent: 'center',
@@ -361,33 +320,33 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     //backgroundColor:'red'
   },
-  descText: {
-    marginHorizontal: 5,
-    color: 'white',
-    fontSize: 0.043 * width,
-    textAlign: 'center',
-  },
-  goNewsDetailText: {
-    color: 'white',
-    fontSize: 22,
-    textAlign: 'center',
-    fontStyle: 'italic',
-    textDecorationLine: 'underline',
-    paddingLeft: 5,
-  },
-  goNewsDetailArea: {
-    //backgroundColor: 'yellow',
-    flexDirection: 'row',
+  //TİTLE AREA //
+
+  //DESC AREA
+  DescprictionArea: {
     justifyContent: 'center',
     alignItems: 'center',
-    height: 50,
-    width: 200,
+    padding: 2,
+    maxHeight: width,
+    //maxHeight:width-height-1,
+    width: width * 0.98,
+    maxWidth: width * 0.99,
+    //backgroundColor: 'green',
   },
   scrollArea: {
     maxHeight: width,
     width: width * 0.98,
     //backgroundColor: 'red',
   },
+  descText: {
+    marginHorizontal: 5,
+    color: 'white',
+    fontSize: 0.043 * width,
+    textAlign: 'center',
+  },
+  //DESC AREA//
+
+  //BUTTONS AREA
   actionsArea: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -404,4 +363,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  //BUTTONS AREA //
 });

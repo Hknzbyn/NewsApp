@@ -15,7 +15,6 @@ export default function SmallAlert(props) {
       };
     } else {
       resetAnimation();
-
     }
   }, [status]);
 
@@ -55,7 +54,9 @@ export default function SmallAlert(props) {
   return (
     <View style={styles.smallAlertContainer}>
       <Animated.View style={[styles.smallAlert, AnimatedStyles]}>
-        <Text numberOfLines={1} style={styles.text}>{props.AlertText}</Text>
+        <Text numberOfLines={1} style={styles.text}>
+          {props.AlertText}
+        </Text>
       </Animated.View>
     </View>
   );
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
   smallAlertContainer: {},
   smallAlert: {
     maxWidth: 300,
-    minWidth:125,
+    minWidth: 125,
     height: 40,
     //marginBottom:20,
     borderRadius: 20,
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(101, 101, 101, 0.5)',
   },
   text: {
-    paddingHorizontal:10,
+    paddingHorizontal: 10,
     color: 'white',
     fontSize: 13,
     fontWeight: '700',

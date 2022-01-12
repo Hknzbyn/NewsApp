@@ -11,6 +11,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 
 //Screens
 import Listnews from './src/components/Listnews';
+import ButtonsArea from './src/components/ButtonsArea';
+
 import News from './src/screens/News';
 import TryScreen from './src/screens/TryScreen';
 import SavedNews from './src/screens/SavedNews';
@@ -51,8 +53,14 @@ const AppWrapper = () => {
         />
 
         <RootStack.Screen
-          name='SavedNews'
+          name='Saved'
           component={SavedNews}
+          options={{ headerShown: true }}
+        />
+
+        <RootStack.Screen
+          name='ButtonsArea'
+          component={ButtonsArea}
           options={{ headerShown: true }}
         />
       </RootStack.Navigator>

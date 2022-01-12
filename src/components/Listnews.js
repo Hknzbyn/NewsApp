@@ -53,26 +53,11 @@ const Listnews = ({ navigation }) => {
 
   //const [modalVisible, setModalVisible] = useState(false);
   const [copiedText, setCopiedText] = React.useState('');
-  const [coppiedAlert, setCoppiedAlert] = useState(false);
+  //const [coppiedAlert, setCoppiedAlert] = useState(false);
   //const [openedUrl, setOpenedUrl] = useState('');
   const [sharedUrl, setSharedUrl] = useState('');
 
   const scrollX = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (coppiedAlert === true) {
-      setTimeout(() => {
-        setCoppiedAlert(false);
-      }, 1500);
-
-      return () => setCoppiedAlert(false);
-    }
-  }, [coppiedAlert]);
-
-  const copyText = (text) => {
-    Clipboard.setString(text);
-    setCoppiedAlert(true);
-  };
 
   useEffect(() => {
     getData();
@@ -112,9 +97,6 @@ const Listnews = ({ navigation }) => {
   };
 
   const renderNewsItems = ({ item, key }) => {
-    //console.log('itemkey..' +item.key )
-    //console.log('lenght' + news.length);
-
     return (
       <View style={styles.container}>
         <TouchableOpacity
@@ -158,8 +140,9 @@ const Listnews = ({ navigation }) => {
 
         <ButtonsArea
           copyAction={item.url}
-          navigate={() => navigation.navigate('SavedNews')}
-          save={() => Alert.alert('onlongPress')}
+          //navigate={() => navigation.navigate('SavedNews')}
+          index={'aAAAaa'}
+          //saveText={item.source}
           openAction={item.url}
           shareAction={item.url}
         />
@@ -189,8 +172,6 @@ const Listnews = ({ navigation }) => {
         //   scrollToActiveIndex(Math.floor(ev.nativeEvent.contentOffset.x / width));
         // }}
       />
-
-      <SmallAlert status={coppiedAlert} AlertText={'Panoya Kopyalandı'} />
     </View>
   );
 };

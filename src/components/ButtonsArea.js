@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import {
   Share,
   View,
@@ -19,6 +19,7 @@ import {
 
 import * as Clipboard from 'expo-clipboard';
 import LottieView from 'lottie-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //imported components
 import SmallAlert from './SmallAlert';
@@ -26,7 +27,7 @@ import WebViewModal from './WebViewModal';
 
 const { width, height } = Dimensions.get('window');
 
-export default function ButtonsArea(props) {
+const ButtonsArea = ({ navigation, props }) => {
   const animCopy = React.useRef(null);
 
   const animSave = React.useRef(null);
@@ -37,45 +38,29 @@ export default function ButtonsArea(props) {
   const [openedUrl, setOpenedUrl] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [coppiedAlert, setCoppiedAlert] = useState(false);
+  const [alertText, setAlertText] = useState('');
 
   const [copiedText, setCopiedText] = React.useState('');
   const [pressedCopy, setPressedCopy] = React.useState(false);
+  const [pressedGoSavedNews, setPressedGoSavedNews] = React.useState(false);
   const [pressedSave, setPressedSave] = React.useState(false);
-  const [pressedLongSave, setPressedLongSave] = React.useState(false);
   const [pressedOpen, setPressedOpen] = React.useState(false);
   const [pressedShare, setPressedShare] = React.useState(false);
 
-  useEffect(() => {
-    //console.log('pressedCopy ' + pressedCopy);
-    if (pressedSave === false) {
-      animSave.current.play(90, 90);
-      return () => animSave.current.reset(null);
-    } else {
-      animSave.current.play(90, 0);
-      return () => animSave.current.reset(null);
-    }
-  });
+  //Copy->
+  const Func_Copy = (text) => {
+    setPressedCopy(true);
+    setCoppiedAlert(true);
+    setAlertText('Panoya Kopyalandı');
+    Clipboard.setString(text);
+    setTimeout(() => {
+      setPressedCopy(false);
+    }, 500);
 
-  useEffect(() => {
-    if (pressedShare === false) {
-      animShare.current.play(39, 39);
-      return () => animShare.current.reset(null);
-    } else {
-      animShare.current.play(93, 109);
-      return () => animShare.current.reset(null);
-    }
-  });
-
-  useEffect(() => {
-    if (pressedOpen === false) {
-      animOpen.current.play(55, 55);
-      return () => animOpen.current.reset(null);
-    } else {
-      animOpen.current.play(55, 100);
-      return () => animOpen.current.reset(null);
-    }
-  });
-
+    setTimeout(() => {
+      setCoppiedAlert(false);
+    }, 1500);
+  };
   useEffect(() => {
     if (pressedCopy === false) {
       animCopy.current.play(42, 42);
@@ -86,30 +71,33 @@ export default function ButtonsArea(props) {
       return () => animCopy.current.reset(null);
     }
   }, [pressedCopy]);
+  //Copy//
 
-  //+
-  const Func_Copy = (text) => {
-    setPressedCopy(true);
+  //Open->
+  const Func_Open = (url) => {
+    setOpenedUrl(url);
 
-    //const text = Clipboard.getStringAsync();
-    Clipboard.setString(text);
-    //Alert.alert('Coppiedtext ' + text);
+    setPressedOpen(true);
     setTimeout(() => {
-      setPressedCopy(false);
-    }, 500);
-    //setCoppiedAlert(true);
-  };
-
-  //Todo
-  const Func_Save = () => {
-    props.saveAction;
-    setPressedSave(true);
-    setTimeout(() => {
-      setPressedSave(false);
+      setPressedOpen(false);
     }, 2000);
-  };
 
-  //+
+    setTimeout(() => {
+      setModalVisible(true);
+    }, 400);
+  };
+  useEffect(() => {
+    if (pressedOpen === false) {
+      animOpen.current.play(55, 55);
+      return () => animOpen.current.reset(null);
+    } else {
+      animOpen.current.play(55, 100);
+      return () => animOpen.current.reset(null);
+    }
+  }, [pressedOpen]);
+  //Open//
+
+  //Share->
   const Func_Share = async (url) => {
     setPressedShare(true);
     setTimeout(() => {
@@ -137,19 +125,63 @@ export default function ButtonsArea(props) {
     }
   };
 
-  //+
-  const Func_Open = (url) => {
-    setOpenedUrl(url);
+  useEffect(() => {
+    if (pressedShare === false) {
+      animShare.current.play(39, 39);
+      return () => animShare.current.reset(null);
+    } else {
+      animShare.current.play(93, 109);
+      return () => animShare.current.reset(null);
+    }
+  });
+  //Share//
 
-    setPressedOpen(true);
-    setTimeout(() => {
-      setPressedOpen(false);
-    }, 2000);
+  //Save->
+  const Func_Save = (text) => {
+    setPressedSave(true);
+    setCopiedText(text);
 
+    console.log('copiedText ', copiedText);
     setTimeout(() => {
-      setModalVisible(true);
-    }, 400);
+      setPressedSave(false);
+    }, 1000);
   };
+
+  useEffect(() => {
+    //console.log('pressedCopy ' + pressedCopy);
+    if (setPressedSave === false) {
+      animSave.current.play(0, 0);
+      return () => animSave.current.reset(null);
+    } else {
+      animSave.current.play(0, 81);
+      return () => animSave.current.reset(null);
+    }
+  }, [setPressedSave]);
+
+  //Save//
+
+  //LongSave->
+  const Func_GoSavedNews = () => {
+    setPressedGoSavedNews(true);
+
+    // setTimeout(() => {
+    //   () => navigation.navigate('SavedNews');
+    // }, 500);
+    setTimeout(() => {
+      setPressedGoSavedNews(false);
+    }, 1500);
+  };
+
+  useEffect(() => {
+    if (pressedGoSavedNews === false) {
+      animSave.current.play(0, 0);
+      return () => animSave.current.reset(null);
+    } else {
+      animSave.current.play(0, 17);
+      return () => animSave.current.reset(null);
+    }
+  }, [pressedGoSavedNews]);
+  //LongSave//
 
   return (
     <View
@@ -175,14 +207,11 @@ export default function ButtonsArea(props) {
           <Text style={{ color: 'white', fontSize: 12, textAlign: 'center' }}>
             Kopyala
           </Text>
-          <Text style={{ color: 'white', fontSize: 12, textAlign: 'center' }}>
-            {pressedCopy === false ? 'false' : 'true'}
-          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={props.navigate}
-          onLongPress={props.save}
+          onPress={() => Alert.alert('onLongPress')}
+          onLongPress={() => Func_Save(props.index)}
           style={styles.buttonArea}>
           <View style={styles.button}>
             <LottieView
@@ -191,10 +220,10 @@ export default function ButtonsArea(props) {
               source={require('../../assets/Lottie/saveLottie.json')}
               autoPlay={false}
               loop={false}
-              speed={1.15}
+              speed={2}
             />
           </View>
-          <Text style={styles.text}>Kaydet</Text>
+          <Text style={styles.text}>Aç / Kaydet</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -237,10 +266,13 @@ export default function ButtonsArea(props) {
           pressOut={() => setModalVisible(false)}
           closeModal={() => setModalVisible(false)}
         />
+        <SmallAlert status={coppiedAlert} AlertText={alertText} />
       </View>
     </View>
   );
-}
+};
+
+export default ButtonsArea;
 
 const styles = StyleSheet.create({
   actionsArea: {

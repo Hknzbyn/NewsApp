@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
-
+import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+const { width, height } = Dimensions.get('window');
 export default function SmallAlert(props) {
   const [animation, setAnimation] = useState(new Animated.Value(0));
   const status = props.status;
@@ -62,10 +62,16 @@ export default function SmallAlert(props) {
   );
 }
 const styles = StyleSheet.create({
-  smallAlertContainer: {},
+  smallAlertContainer: {
+    width: width,
+    alignItems: 'center',
+    position: 'absolute',
+    top: 250,
+  },
   smallAlert: {
     maxWidth: 300,
     minWidth: 125,
+    //width: 150,
     height: 40,
     //marginBottom:20,
     borderRadius: 20,

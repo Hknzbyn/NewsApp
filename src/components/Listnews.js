@@ -96,12 +96,15 @@ const Listnews = ({ navigation }) => {
     });
   };
 
+  const goSavedNewsScreen = () => {
+    console.log('goSavedNewsScreen');
+    Alert.alert('Alert');
+  };
+
   const renderNewsItems = ({ item, key }) => {
     return (
       <View style={styles.container}>
-        <TouchableOpacity
-          style={styles.newAreaContainer}
-          onPress={() => setModalVisible(!modalVisible)}>
+        <View style={styles.newAreaContainer}>
           <ImageBackground
             style={{
               resizeMode: 'cover',
@@ -131,17 +134,17 @@ const Listnews = ({ navigation }) => {
 
               <View style={styles.TitleArea}>
                 <View style={styles.Title}>
-                  <Text style={styles.titleText}>{item.name}</Text>
+                  <Text numberOfLines={3} ellipsizeMode='tail' style={styles.titleText}>{item.name}</Text>
                 </View>
               </View>
             </View>
           </ImageBackground>
-        </TouchableOpacity>
+        </View>
 
         <ButtonsArea
           copyAction={item.url}
-          //navigate={() => navigation.navigate('SavedNews')}
-          index={'aAAAaa'}
+          goPage={()=>navigation.navigate('SavedNews') }
+          index={item}
           //saveText={item.source}
           openAction={item.url}
           shareAction={item.url}
@@ -297,7 +300,7 @@ const styles = StyleSheet.create({
 
     //marginLeft: 1,
     color: 'white',
-    fontSize: 35,
+    fontSize: 32,
     textAlign: 'center',
     //backgroundColor:'red'
   },

@@ -53,9 +53,23 @@ const AppWrapper = () => {
         />
 
         <RootStack.Screen
-          name='Saved'
+          name='SavedNews'
           component={SavedNews}
-          options={{ headerShown: true }}
+          options={{
+            headerShown: true,
+            headerTitle: 'KAYDEDİLEN HABERLER',
+            headerTitleAlign: 'center',
+            headerTitleStyle: {
+              color: 'white',
+              fontSize: 25,
+              fontWeight: '800',
+            },
+            headerStyle: {
+              //borderWidth: 0.5,
+
+              backgroundColor: '#678983' /* #333333*/,
+            },
+          }}
         />
 
         <RootStack.Screen

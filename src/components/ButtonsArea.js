@@ -27,7 +27,7 @@ import WebViewModal from './WebViewModal';
 
 const { width, height } = Dimensions.get('window');
 
-const ButtonsArea = ({ navigation, props }) => {
+const ButtonsArea = (props) => {
   const animCopy = React.useRef(null);
 
   const animSave = React.useRef(null);
@@ -37,7 +37,7 @@ const ButtonsArea = ({ navigation, props }) => {
   //imported Components State
   const [openedUrl, setOpenedUrl] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
-  const [coppiedAlert, setCoppiedAlert] = useState(false);
+  const [alertStatus, SetAlertStatus] = useState(false);
   const [alertText, setAlertText] = useState('');
 
   const [copiedText, setCopiedText] = React.useState('');
@@ -50,7 +50,7 @@ const ButtonsArea = ({ navigation, props }) => {
   //Copy->
   const Func_Copy = (text) => {
     setPressedCopy(true);
-    setCoppiedAlert(true);
+    SetAlertStatus(true);
     setAlertText('Panoya Kopyalandı');
     Clipboard.setString(text);
     setTimeout(() => {
@@ -58,7 +58,7 @@ const ButtonsArea = ({ navigation, props }) => {
     }, 500);
 
     setTimeout(() => {
-      setCoppiedAlert(false);
+      SetAlertStatus(false);
     }, 1500);
   };
   useEffect(() => {
@@ -137,14 +137,60 @@ const ButtonsArea = ({ navigation, props }) => {
   //Share//
 
   //Save->
-  const Func_Save = (text) => {
+  const Func_Save = async (text) => {
     setPressedSave(true);
-    setCopiedText(text);
 
-    console.log('copiedText ', copiedText);
-    setTimeout(() => {
-      setPressedSave(false);
-    }, 1000);
+    const setSettings=()=>{
+      console.log('setSetting')
+      setTimeout(() => {
+        setPressedSave(false);
+        SetAlertStatus(false);
+      }, 1000);
+    }
+
+    var asyncData = await AsyncStorage.getItem('@SavedNews');
+    if (asyncData === null) {
+      var data = [];
+      await data.push(text);
+      await AsyncStorage.setItem('@SavedNews', JSON.stringify(data));
+      setAlertText('Haber Kaydedildi');
+      SetAlertStatus(true);
+
+      //setCopiedText(text);
+      //Alert.alert(copiedText);
+      //console.log('copiedText..', copiedText);
+      setSettings()
+    } else {
+      var data = JSON.parse(asyncData);
+
+      if (data.find((x) => x.url === text.url) === undefined) {
+        await data.push(text);
+        await AsyncStorage.removeItem('@SavedNews');
+        await AsyncStorage.setItem('@SavedNews', JSON.stringify(data));
+        setAlertText('Haber Kaydedildi');
+        SetAlertStatus(true);
+
+        //setCopiedText(text);
+        //Alert.alert(copiedText);
+        //console.log('copiedText..', copiedText);
+        setTimeout(() => {
+          setPressedSave(false);
+          SetAlertStatus(false);
+        }, 1000);
+      } else {
+        setAlertText('Haber Kaydedilmedi');
+        SetAlertStatus(true);
+
+        //setCopiedText(text);
+        //Alert.alert(copiedText);
+        //console.log('copiedText..', copiedText);
+        setTimeout(() => {
+          setPressedSave(false);
+          SetAlertStatus(false);
+        }, 1000);
+      }
+    }
+
   };
 
   useEffect(() => {
@@ -156,32 +202,30 @@ const ButtonsArea = ({ navigation, props }) => {
       animSave.current.play(0, 81);
       return () => animSave.current.reset(null);
     }
-  }, [setPressedSave]);
+  }, [pressedSave]);
 
-  //Save//
+  //GoSavedNews//
 
-  //LongSave->
-  const Func_GoSavedNews = () => {
-    setPressedGoSavedNews(true);
+  // //LongSave->
+  // const Func_GoSavedNews = () => {
+  //   console.log('setPressedGoSavedNews_in');
 
-    // setTimeout(() => {
-    //   () => navigation.navigate('SavedNews');
-    // }, 500);
-    setTimeout(() => {
-      setPressedGoSavedNews(false);
-    }, 1500);
-  };
+  //   setTimeout(() => {
+  //     setPressedGoSavedNews(false);
+  //   }, 1500);
+  // };
 
-  useEffect(() => {
-    if (pressedGoSavedNews === false) {
-      animSave.current.play(0, 0);
-      return () => animSave.current.reset(null);
-    } else {
-      animSave.current.play(0, 17);
-      return () => animSave.current.reset(null);
-    }
-  }, [pressedGoSavedNews]);
-  //LongSave//
+  // useEffect(() => {
+  //   if (pressedGoSavedNews === false) {
+  //     animSave.current.play(0, 0);
+  //     return () => animSave.current.reset(null);
+  //   } else {
+  //     animSave.current.play(0, 17);
+
+  //     return () => animSave.current.reset(null);
+  //   }
+  // }, [pressedGoSavedNews]);
+  // //LongSave//
 
   return (
     <View
@@ -210,7 +254,7 @@ const ButtonsArea = ({ navigation, props }) => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => Alert.alert('onLongPress')}
+          onPress={props.goPage}
           onLongPress={() => Func_Save(props.index)}
           style={styles.buttonArea}>
           <View style={styles.button}>
@@ -266,7 +310,7 @@ const ButtonsArea = ({ navigation, props }) => {
           pressOut={() => setModalVisible(false)}
           closeModal={() => setModalVisible(false)}
         />
-        <SmallAlert status={coppiedAlert} AlertText={alertText} />
+        <SmallAlert status={alertStatus} AlertText={alertText} />
       </View>
     </View>
   );

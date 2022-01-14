@@ -42,7 +42,6 @@ const ButtonsArea = (props) => {
 
   const [copiedText, setCopiedText] = React.useState('');
   const [pressedCopy, setPressedCopy] = React.useState(false);
-  const [pressedGoSavedNews, setPressedGoSavedNews] = React.useState(false);
   const [pressedSave, setPressedSave] = React.useState(false);
   const [pressedOpen, setPressedOpen] = React.useState(false);
   const [pressedShare, setPressedShare] = React.useState(false);
@@ -124,7 +123,6 @@ const ButtonsArea = (props) => {
       alert(error.message);
     }
   };
-
   useEffect(() => {
     if (pressedShare === false) {
       animShare.current.play(39, 39);
@@ -133,33 +131,30 @@ const ButtonsArea = (props) => {
       animShare.current.play(93, 109);
       return () => animShare.current.reset(null);
     }
-  });
+  }, [pressedShare]);
   //Share//
 
   //Save->
   const Func_Save = async (text) => {
     setPressedSave(true);
 
-    const setSettings=()=>{
-      console.log('setSetting')
+    const setSettings = (text) => {
+      SetAlertStatus(true);
+      setAlertText(text);
+
       setTimeout(() => {
         setPressedSave(false);
         SetAlertStatus(false);
       }, 1000);
-    }
+    };
 
     var asyncData = await AsyncStorage.getItem('@SavedNews');
     if (asyncData === null) {
       var data = [];
       await data.push(text);
       await AsyncStorage.setItem('@SavedNews', JSON.stringify(data));
-      setAlertText('Haber Kaydedildi');
-      SetAlertStatus(true);
-
-      //setCopiedText(text);
-      //Alert.alert(copiedText);
-      //console.log('copiedText..', copiedText);
-      setSettings()
+      //setAlertText('Haber Kaydedildi');
+      setSettings('Haber Kaydedildi');
     } else {
       var data = JSON.parse(asyncData);
 
@@ -167,30 +162,13 @@ const ButtonsArea = (props) => {
         await data.push(text);
         await AsyncStorage.removeItem('@SavedNews');
         await AsyncStorage.setItem('@SavedNews', JSON.stringify(data));
-        setAlertText('Haber Kaydedildi');
-        SetAlertStatus(true);
-
-        //setCopiedText(text);
-        //Alert.alert(copiedText);
-        //console.log('copiedText..', copiedText);
-        setTimeout(() => {
-          setPressedSave(false);
-          SetAlertStatus(false);
-        }, 1000);
+        //setAlertText('Haber Kaydedildi');
+        setSettings('Haber Kaydedildi');
       } else {
-        setAlertText('Haber Kaydedilmedi');
-        SetAlertStatus(true);
-
-        //setCopiedText(text);
-        //Alert.alert(copiedText);
-        //console.log('copiedText..', copiedText);
-        setTimeout(() => {
-          setPressedSave(false);
-          SetAlertStatus(false);
-        }, 1000);
+        //setAlertText('Haber Kaydedilmedi');
+        setSettings('Haber Kaydedilmedi');
       }
     }
-
   };
 
   useEffect(() => {
@@ -205,27 +183,6 @@ const ButtonsArea = (props) => {
   }, [pressedSave]);
 
   //GoSavedNews//
-
-  // //LongSave->
-  // const Func_GoSavedNews = () => {
-  //   console.log('setPressedGoSavedNews_in');
-
-  //   setTimeout(() => {
-  //     setPressedGoSavedNews(false);
-  //   }, 1500);
-  // };
-
-  // useEffect(() => {
-  //   if (pressedGoSavedNews === false) {
-  //     animSave.current.play(0, 0);
-  //     return () => animSave.current.reset(null);
-  //   } else {
-  //     animSave.current.play(0, 17);
-
-  //     return () => animSave.current.reset(null);
-  //   }
-  // }, [pressedGoSavedNews]);
-  // //LongSave//
 
   return (
     <View

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,21 +8,19 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import WebViewModal from '../components/WebViewModal';
-import { shadowOffset } from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
-import AnimatedLottieView from 'lottie-react-native';
+import { SwipeListView } from 'react-native-swipe-list-view';
+
 
 import LottieView from 'lottie-react-native';
 const { width, height } = Dimensions.get('window');
 
-//const saved = AsyncStorage.getItem('@SavedNews');
 
 const SavedNews = ({ navigation }) => {
   const [news, setNews] = useState([]);
-
-  //const [state, SetSate] =useState([]),
 
   useEffect(() => {
     getSaved();
@@ -42,11 +40,30 @@ const SavedNews = ({ navigation }) => {
     }
   };
 
+  const deleteNew = async (deletedNew) => {
+    console.log('deletedNew');
+    var asyncData = await AsyncStorage.getItem('@SavedNews');
+    var data = JSON.parse(asyncData)   
+    if (data.find((x) => x.url == deletedNew.url) ) {
+       data.splice(data.findIndex((x) => x.url == deletedNew.url),1);
+       console.log(`data`, data)
+      await AsyncStorage.removeItem('@SavedNews');
+
+      await AsyncStorage.setItem('@SavedNews', JSON.stringify(data));
+    }else{
+      
+    }
+
+    getSaved();
+  };
+
   const renderSavedNews = ({ item, key }) => {
     return (
       <View style={styles.containerView}>
         <ScrollView>
-          <TouchableOpacity style={styles.newCardContainer}>
+          <TouchableOpacity
+            onPress={() => Alert.alert('item-> ', JSON.stringify(item))}
+            style={styles.newCardContainer}>
             <View>
               <Image style={styles.imageArea} source={{ uri: item.image }} />
             </View>
@@ -60,7 +77,7 @@ const SavedNews = ({ navigation }) => {
               </Text>
             </View>
             <TouchableOpacity
-              //onPress={props.goPage}
+              onPress={() => deleteNew(item)}
               style={styles.buttonArea}>
               <View style={styles.button}>
                 <LottieView
@@ -84,7 +101,7 @@ const SavedNews = ({ navigation }) => {
     <View style={styles.containerView}>
       <FlatList
         data={news}
-        keyExtractor={(item) => item.key}
+        keyExtractor={(item) => item.url}
         renderItem={renderSavedNews}
       />
     </View>
@@ -96,7 +113,7 @@ export default SavedNews;
 const styles = StyleSheet.create({
   containerView: {
     flex: 1,
-    backgroundColor: '#678983',
+    backgroundColor: '#181D31',
     justifyContent: 'center',
     alignItems: 'center',
     //marginVertical:5,
@@ -106,7 +123,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: width,
     height: height * 0.13,
-    backgroundColor: '#181D31',
+    backgroundColor: '#678983',
     justifyContent: 'space-between',
     alignItems: 'center',
     //borderWidth:1,
@@ -130,7 +147,7 @@ const styles = StyleSheet.create({
   },
   titleArea: {
     paddingHorizontal: 5,
-    width: width * 0.6,
+    width: width * 0.64,
     height: height * 0.13,
     justifyContent: 'center',
     alignItems: 'center',
@@ -142,22 +159,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'white',
   },
-
-  iconArea: {
-    width: width * 0.16,
-    height: height * 0.13,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'black',
-  },
   buttonArea: {
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    //backgroundColor: 'gray',
   },
   button: {
-    height: 60,
-    width: 60,
+    height: height * 0.07,
+    width: 40,
     justifyContent: 'center',
     alignItems: 'center',
     //backgroundColor: 'red',

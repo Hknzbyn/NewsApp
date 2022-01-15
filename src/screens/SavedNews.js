@@ -9,18 +9,26 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  TouchableHighlight,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import WebViewModal from '../components/WebViewModal';
+import { AntDesign } from '@expo/vector-icons';
 import { SwipeListView } from 'react-native-swipe-list-view';
+import SmallAlert from '../components/SmallAlert';
 
-
-import LottieView from 'lottie-react-native';
 const { width, height } = Dimensions.get('window');
 
-
 const SavedNews = ({ navigation }) => {
-  const [news, setNews] = useState([]);
+  const [alertStatus, SetAlertStatus] = useState(false);
+
+  const [alertText, setAlertText] = useState('');
+  //const [news, setNews] = useState([]);
+  const [listData, setListData] = useState(
+    Array(20)
+      .fill('')
+      .map((_, i) => ({ key: `${i}`, text: `item #${i}` }))
+  );
 
   useEffect(() => {
     getSaved();
@@ -32,7 +40,7 @@ const SavedNews = ({ navigation }) => {
       if (myArray !== null) {
         // We have data!!
         //console.log(JSON.parse(myArray));
-        setNews(JSON.parse(myArray));
+        setListData(JSON.parse(myArray));
         //SetSate(myArray)
       }
     } catch (error) {
@@ -43,67 +51,96 @@ const SavedNews = ({ navigation }) => {
   const deleteNew = async (deletedNew) => {
     console.log('deletedNew');
     var asyncData = await AsyncStorage.getItem('@SavedNews');
-    var data = JSON.parse(asyncData)   
-    if (data.find((x) => x.url == deletedNew.url) ) {
-       data.splice(data.findIndex((x) => x.url == deletedNew.url),1);
-       console.log(`data`, data)
+    var data = JSON.parse(asyncData);
+    if (data.find((x) => x.url == deletedNew.url)) {
+      data.splice(
+        data.findIndex((x) => x.url == deletedNew.url),
+        1
+      );
+      console.log(`data`, data);
       await AsyncStorage.removeItem('@SavedNews');
 
       await AsyncStorage.setItem('@SavedNews', JSON.stringify(data));
-    }else{
-      
+      SetAlertStatus(true);
+      setAlertText('Haber Kaldırıldı');
+      setTimeout(() => {
+        SetAlertStatus(false);
+      }, 1500);
     }
 
     getSaved();
   };
 
-  const renderSavedNews = ({ item, key }) => {
-    return (
-      <View style={styles.containerView}>
-        <ScrollView>
-          <TouchableOpacity
-            onPress={() => Alert.alert('item-> ', JSON.stringify(item))}
-            style={styles.newCardContainer}>
-            <View>
-              <Image style={styles.imageArea} source={{ uri: item.image }} />
-            </View>
-
-            <View style={styles.titleArea}>
-              <Text
-                numberOfLines={3}
-                ellipsizeMode='tail'
-                style={styles.titleText}>
-                {item.name}
-              </Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => deleteNew(item)}
-              style={styles.buttonArea}>
-              <View style={styles.button}>
-                <LottieView
-                  //ref={animSave}
-                  style={{ width: 45, height: 45 }}
-                  source={require('../../assets/Lottie/saveLottie.json')}
-                  autoPlay={false}
-                  loop={false}
-                  speed={2}
-                />
-              </View>
-              <Text style={styles.text}>Sil</Text>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
-    );
+  const closeRow = (rowMap, rowKey) => {
+    if (rowMap[rowKey]) {
+      rowMap[rowKey].closeRow();
+    }
   };
+
+ 
+
+  const onRowDidOpen = (rowKey) => {
+    console.log('This row opened', rowKey);
+  };
+
+  const renderItem = (data) => (
+    <TouchableHighlight
+      onPress={() => console.log('You touched me')}
+      style={styles.containerView}
+      underlayColor={'#AAA'}>
+      <TouchableOpacity
+        onPress={() => Alert.alert('item-> ', JSON.stringify(data.item))}
+        style={styles.newCardContainer}>
+        <View>
+          <Image style={styles.imageArea} source={{ uri: data.item.image }} />
+        </View>
+
+        <View style={styles.titleArea}>
+          <Text numberOfLines={3} ellipsizeMode='tail' style={styles.titleText}>
+            {data.item.name}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </TouchableHighlight>
+  );
+
+  const renderHiddenItem = (data, rowMap) => (
+    <View style={styles.rowBack}>
+      <TouchableOpacity
+        style={[styles.backRightBtn, styles.backRightBtnLeft]}
+        onPress={() => closeRow(rowMap, data.item.key)}>
+        <View style={styles.button}>
+          <AntDesign name='sharealt' size={30} color='#F0E9D2' />
+        </View>
+        <Text style={styles.text}>Paylaş</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.backRightBtn, styles.backRightBtnRight]}
+        onPress={() => deleteNew(data.item)}>
+        <View style={styles.button}>
+          <AntDesign name='delete' size={30} color='#F0E9D2' />
+        </View>
+        <Text style={styles.text}>Delete</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <View style={styles.containerView}>
-      <FlatList
-        data={news}
-        keyExtractor={(item) => item.url}
-        renderItem={renderSavedNews}
+      <SwipeListView
+        data={listData}
+        renderItem={renderItem}
+        renderHiddenItem={renderHiddenItem}
+        leftOpenValue={0}
+        rightOpenValue={-height * 0.14}
+        //previewRowKey={'0'}
+        previewOpenValue={-40}
+        previewOpenDelay={3000}
+        onRowDidOpen={onRowDidOpen}
       />
+      <View>
+        <SmallAlert status={alertStatus} AlertText={alertText} />
+      </View>
     </View>
   );
 };
@@ -147,11 +184,11 @@ const styles = StyleSheet.create({
   },
   titleArea: {
     paddingHorizontal: 5,
-    width: width * 0.64,
+    width: width - height * 0.13,
     height: height * 0.13,
     justifyContent: 'center',
     alignItems: 'center',
-    //backgroundColor: 'blue',
+    //backgroundColor: 'purple',
   },
   titleText: {
     fontWeight: 'bold',
@@ -176,5 +213,34 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     textAlign: 'center',
+  },
+  container: {
+    backgroundColor: 'white',
+    flex: 1,
+  },
+  rowBack: {
+    alignItems: 'center',
+    marginTop: 5,
+    backgroundColor: '#678983',
+    height: height * 0.13,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    //paddingLeft: 15,
+  },
+  backRightBtn: {
+    alignItems: 'center',
+    bottom: 0,
+    justifyContent: 'center',
+    position: 'absolute',
+    top: 0,
+    width: 65,
+  },
+  backRightBtnLeft: {
+    //backgroundColor: 'blue',
+    right: 65,
+  },
+  backRightBtnRight: {
+    //backgroundColor: 'red',
+    right: 0,
   },
 });

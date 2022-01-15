@@ -57,8 +57,10 @@ const AppWrapper = () => {
           component={SavedNews}
           options={{
             headerShown: true,
-            headerTitle: 'KAYDEDİLEN HABERLER',
+            headerTitle: 'Kaydedilen Haberler',
             headerTitleAlign: 'center',
+            headerTintColor: 'white',
+
             headerTitleStyle: {
               color: 'white',
               fontSize: 25,
@@ -67,7 +69,7 @@ const AppWrapper = () => {
             headerStyle: {
               //borderWidth: 0.5,
 
-              backgroundColor: '#678983' /* #333333*/,
+              backgroundColor: '#181D31' /* #333333*/,
             },
           }}
         />

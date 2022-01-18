@@ -43,6 +43,8 @@ const ButtonsArea = (props) => {
   const [copiedText, setCopiedText] = React.useState('');
   const [pressedCopy, setPressedCopy] = React.useState(false);
   const [pressedSave, setPressedSave] = React.useState(false);
+  const [savedStatus, SetSavedStatus] = React.useState(false);
+
   const [pressedOpen, setPressedOpen] = React.useState(false);
   const [pressedShare, setPressedShare] = React.useState(false);
 
@@ -135,52 +137,84 @@ const ButtonsArea = (props) => {
   //Share//
 
   //Save->
-  const Func_Save = async (text) => {
-    setPressedSave(true);
-
-    const setSettings = (text) => {
+  const Func_SaveOrDelete = async (savedItem) => {
+    const setAlertSettings = (message) => {
       SetAlertStatus(true);
-      setAlertText(text);
-
+      setAlertText(message);
       setTimeout(() => {
-        setPressedSave(false);
         SetAlertStatus(false);
       }, 1000);
     };
 
+    if (savedStatus === false) {
+      setPressedSave(true);
+      setTimeout(() => {
+        setPressedSave(false);
+      }, 1000);
+
+      var asyncData = await AsyncStorage.getItem('@SavedNews');
+      if (asyncData === null) {
+        var data = [];
+        await data.push(savedItem);
+        await AsyncStorage.setItem('@SavedNews', JSON.stringify(data));
+      } else {
+        var data = JSON.parse(asyncData);
+
+        if (data.find((x) => x.url === savedItem.url) === undefined) {
+          await data.push(savedItem);
+          await AsyncStorage.removeItem('@SavedNews');
+          await AsyncStorage.setItem('@SavedNews', JSON.stringify(data));
+          //setAlertText('Haber Kaydedildi');
+          setAlertSettings('Haber Kaydedildi');
+        } else {
+          setAlertSettings('Haber Kaydedilmedi');
+        }
+      }
+    } else {
+      var asyncData = await AsyncStorage.getItem('@SavedNews');
+      var data = JSON.parse(asyncData);
+      if (data.find((x) => x.url == savedItem.url)) {
+        data.splice(
+          data.findIndex((x) => x.url == savedItem.url),
+          1
+        );
+        await AsyncStorage.removeItem('@SavedNews');
+
+        await AsyncStorage.setItem('@SavedNews', JSON.stringify(data));
+
+        setAlertSettings('Haber Kaldırıldı');
+        checkSavedorNot();
+      }
+    }
+  };
+
+  const checkSavedorNot = async (ActiveUrl) => {
     var asyncData = await AsyncStorage.getItem('@SavedNews');
     if (asyncData === null) {
-      var data = [];
-      await data.push(text);
-      await AsyncStorage.setItem('@SavedNews', JSON.stringify(data));
-      //setAlertText('Haber Kaydedildi');
-      setSettings('Haber Kaydedildi');
+      SetSavedStatus(false);
     } else {
+      var data = [];
+
       var data = JSON.parse(asyncData);
 
-      if (data.find((x) => x.url === text.url) === undefined) {
-        await data.push(text);
-        await AsyncStorage.removeItem('@SavedNews');
-        await AsyncStorage.setItem('@SavedNews', JSON.stringify(data));
-        //setAlertText('Haber Kaydedildi');
-        setSettings('Haber Kaydedildi');
+      if (data.find((x) => x.url === ActiveUrl) !== undefined) {
+        SetSavedStatus(true);
       } else {
-        //setAlertText('Haber Kaydedilmedi');
-        setSettings('Haber Kaydedilmedi');
+        SetSavedStatus(false);
       }
     }
   };
 
   useEffect(() => {
-    //console.log('pressedCopy ' + pressedCopy);
-    if (setPressedSave === false) {
-      animSave.current.play(0, 0);
+    checkSavedorNot(props.ActiveItem);
+    if (savedStatus === false) {
+      animSave.current?.play(0, 0);
       return () => animSave.current.reset(null);
     } else {
-      animSave.current.play(0, 81);
+      animSave.current?.play(0, 90);
       return () => animSave.current.reset(null);
     }
-  }, [pressedSave]);
+  }, [pressedSave, savedStatus]);
 
   //GoSavedNews//
 
@@ -212,7 +246,7 @@ const ButtonsArea = (props) => {
 
         <TouchableOpacity
           onPress={props.goPage}
-          onLongPress={() => Func_Save(props.index)}
+          onLongPress={() => Func_SaveOrDelete(props.index)}
           style={styles.buttonArea}>
           <View style={styles.button}>
             <LottieView
@@ -224,7 +258,9 @@ const ButtonsArea = (props) => {
               speed={2}
             />
           </View>
-          <Text style={styles.text}>Aç / Kaydet</Text>
+          <Text style={styles.text}>
+            {savedStatus == true ? 'Aç / Kaldır' : 'Aç / Kaydet'}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -260,11 +296,10 @@ const ButtonsArea = (props) => {
           <Text style={styles.text}>Paylaş</Text>
         </TouchableOpacity>
       </View>
-      <View>
+      <View >
         <WebViewModal
           url={openedUrl}
           visible={modalVisible}
-          pressOut={() => setModalVisible(false)}
           closeModal={() => setModalVisible(false)}
         />
         <SmallAlert status={alertStatus} AlertText={alertText} />

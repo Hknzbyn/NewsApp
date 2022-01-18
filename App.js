@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Dimensions, StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 const { width, height } = Dimensions.get('window');
 import { StatusBar } from 'expo-status-bar';
 
@@ -10,11 +10,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
 //Screens
-import Listnews from './src/components/Listnews';
-import ButtonsArea from './src/components/ButtonsArea';
-
 import News from './src/screens/News';
-import TryScreen from './src/screens/TryScreen';
+import SplashScreen from './src/screens/SplashScreen';
 import SavedNews from './src/screens/SavedNews';
 
 // React Navigation Stacks
@@ -33,13 +30,7 @@ export default function App() {
 const AppWrapper = () => {
   return (
     <NavigationContainer>
-      <RootStack.Navigator initialRouteName='Listnews'>
-        <RootStack.Screen
-          name='Listnews'
-          component={Listnews}
-          options={{ headerShown: false }}
-        />
-
+      <RootStack.Navigator initialRouteName='SplashScreen'>
         <RootStack.Screen
           name='News'
           component={News}
@@ -47,8 +38,8 @@ const AppWrapper = () => {
         />
 
         <RootStack.Screen
-          name='TryScreen'
-          component={TryScreen}
+          name='SplashScreen'
+          component={SplashScreen}
           options={{ headerShown: false }}
         />
 
@@ -57,7 +48,7 @@ const AppWrapper = () => {
           component={SavedNews}
           options={{
             headerShown: true,
-            headerTitle: 'Kaydedilen Haberler',
+            headerTitle: 'Kaydedilenler',
             headerTitleAlign: 'center',
             headerTintColor: 'white',
 
@@ -72,12 +63,6 @@ const AppWrapper = () => {
               backgroundColor: '#181D31' /* #333333*/,
             },
           }}
-        />
-
-        <RootStack.Screen
-          name='ButtonsArea'
-          component={ButtonsArea}
-          options={{ headerShown: true }}
         />
       </RootStack.Navigator>
     </NavigationContainer>

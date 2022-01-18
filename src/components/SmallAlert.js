@@ -4,7 +4,6 @@ const { width, height } = Dimensions.get('window');
 export default function SmallAlert(props) {
   const [animation, setAnimation] = useState(new Animated.Value(0));
   const status = props.status;
-  //const [status, setStatus] = useState(props.status);
 
   useEffect(() => {
     if (status === true) {
@@ -13,8 +12,6 @@ export default function SmallAlert(props) {
       return () => {
         resetAnimation();
       };
-    } else {
-      resetAnimation();
     }
   }, [status]);
 

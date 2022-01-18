@@ -10,6 +10,7 @@ import {
   Image,
   Alert,
   TouchableHighlight,
+  Share,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import WebViewModal from '../components/WebViewModal';
@@ -20,6 +21,8 @@ import SmallAlert from '../components/SmallAlert';
 const { width, height } = Dimensions.get('window');
 
 const SavedNews = ({ navigation }) => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [openedUrl, setOpenedUrl] = useState('');
   const [alertStatus, SetAlertStatus] = useState(false);
 
   const [alertText, setAlertText] = useState('');
@@ -34,22 +37,42 @@ const SavedNews = ({ navigation }) => {
     getSaved();
   }, []);
 
+  //function that retrieves previously recorded news
   const getSaved = async () => {
     try {
       const myArray = await AsyncStorage.getItem('@SavedNews');
       if (myArray !== null) {
-        // We have data!!
-        //console.log(JSON.parse(myArray));
         setListData(JSON.parse(myArray));
-        //SetSate(myArray)
       }
     } catch (error) {
-      console.log('getSaved_err');
     }
   };
 
-  const deleteNew = async (deletedNew) => {
-    console.log('deletedNew');
+// function Share specific news
+  const Func_Share = async (url) => {
+    try {
+      const result =
+        Platform.OS === 'android'
+          ? await Share.share({
+              message: url,
+            })
+          : await Share.share({
+              url: url,
+            });
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+        } else {
+          Alert.alert('ok');
+        }
+      } else if (result.action === Share.dismissedAction) {
+      }
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+// function Delete specific news
+const deleteNew = async (deletedNew) => {
     var asyncData = await AsyncStorage.getItem('@SavedNews');
     var data = JSON.parse(asyncData);
     if (data.find((x) => x.url == deletedNew.url)) {
@@ -57,7 +80,6 @@ const SavedNews = ({ navigation }) => {
         data.findIndex((x) => x.url == deletedNew.url),
         1
       );
-      console.log(`data`, data);
       await AsyncStorage.removeItem('@SavedNews');
 
       await AsyncStorage.setItem('@SavedNews', JSON.stringify(data));
@@ -77,19 +99,18 @@ const SavedNews = ({ navigation }) => {
     }
   };
 
- 
-
   const onRowDidOpen = (rowKey) => {
-    console.log('This row opened', rowKey);
+  };
+
+  const Func_Open = (url) => {
+    setOpenedUrl(url);
+    setModalVisible(true);
   };
 
   const renderItem = (data) => (
-    <TouchableHighlight
-      onPress={() => console.log('You touched me')}
-      style={styles.containerView}
-      underlayColor={'#AAA'}>
+    <TouchableHighlight style={styles.containerView} underlayColor={'#AAA'}>
       <TouchableOpacity
-        onPress={() => Alert.alert('item-> ', JSON.stringify(data.item))}
+        onPress={() => Func_Open(data.item.url)}
         style={styles.newCardContainer}>
         <View>
           <Image style={styles.imageArea} source={{ uri: data.item.image }} />
@@ -109,9 +130,11 @@ const SavedNews = ({ navigation }) => {
       <TouchableOpacity
         style={[styles.backRightBtn, styles.backRightBtnLeft]}
         onPress={() => closeRow(rowMap, data.item.key)}>
-        <View style={styles.button}>
+        <TouchableOpacity
+          onPress={() => Func_Share(data.item.url)}
+          style={styles.button}>
           <AntDesign name='sharealt' size={30} color='#F0E9D2' />
-        </View>
+        </TouchableOpacity>
         <Text style={styles.text}>Paylaş</Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -131,7 +154,7 @@ const SavedNews = ({ navigation }) => {
         data={listData}
         renderItem={renderItem}
         renderHiddenItem={renderHiddenItem}
-        leftOpenValue={0}
+        leftOpenValue={5}
         rightOpenValue={-height * 0.14}
         //previewRowKey={'0'}
         previewOpenValue={-40}
@@ -139,6 +162,11 @@ const SavedNews = ({ navigation }) => {
         onRowDidOpen={onRowDidOpen}
       />
       <View>
+        <WebViewModal
+          url={openedUrl}
+          visible={modalVisible}
+          closeModal={() => setModalVisible(false)}
+        />
         <SmallAlert status={alertStatus} AlertText={alertText} />
       </View>
     </View>

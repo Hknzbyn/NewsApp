@@ -30,11 +30,10 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
+[![Watch the video](https://www.pngkit.com/png/detail/118-1185200_youtube-frame-youtube.png)](https://www.youtube.com/watch?v=JnF0u_bI1Ig)
 
-  [![App Video](https://img.youtube.com/vi/JnF0u_bI1Ig/hqdefault.jpg)](https://www.youtube.com/watch?v=JnF0u_bI1Ig "App Video - Click to Watch!")
 
-<div style="white-space: nowrap;width:1200px;height:500px;overflow-y:hidden;overflow-x:auto;">
-
+<div style="white-space: nowrap;height:500px;overflow-y:hidden;overflow-x:auto;">
 <img src='https://github.com/Hknzbyn/NewsApp/blob/main/sreenshoots/ss1.jpeg' width='155'>
 <img src='https://github.com/Hknzbyn/NewsApp/blob/main/sreenshoots/ss2.jpeg' width='155'>
 <img src='https://github.com/Hknzbyn/NewsApp/blob/main/sreenshoots/ss3.jpeg' width='155'>
